@@ -8,7 +8,7 @@ function mongooseLogsPlugin(schema, options) {
     schema.add({
         modifiedBy: {}
     });
-
+    
     // create action logs
     schema.post('save', function(doc, next) {
         var refrenceDocument = Object.assign({}, this._doc);
@@ -24,8 +24,7 @@ function mongooseLogsPlugin(schema, options) {
             return next();
         });
     });
-
-    // update action logs
+// update action logs
     schema.post('update', function(doc, next) {
         var activity = {
             collectionType: options.schemaName,
@@ -35,7 +34,7 @@ function mongooseLogsPlugin(schema, options) {
         if (this._update.$set && this._update.$set.modifiedBy) {
             var refrenceDocument = Object.assign({}, this._update.$set);
             delete refrenceDocument.modifiedBy;
-            activity.referenceDocument = refrenceDocument;
+
             activity.loggedBy = this._update.$set.modifiedBy;
         } else if (this._update.$pushALogl) {
             activity.referenceDocument = this._update.$pushALogl;
@@ -46,6 +45,7 @@ function mongooseLogsPlugin(schema, options) {
             return next();
         });
     });
+
 
     schema.post('findOneAndUpdate', function(doc, next) {
         var refrenceDocument = Object.assign({}, doc);
@@ -62,12 +62,12 @@ function mongooseLogsPlugin(schema, options) {
             return next();
         });
     });
-
-    // create logs for delete action
+ // create logs for delete action
     schema.post('findOneAndRemove', function(doc, next) {
+        var refrenceDocument = Object.assign({}, doc);
         var activity = {
             collectionType: options.schemaName,
-            referenceDocument: doc,
+            referenceDocument: refrenceDocument,
             action: options.deleteAction || 'deleted',
             loggedBy: this.modifiedBy,
             createdAt: Date.now()
@@ -78,10 +78,12 @@ function mongooseLogsPlugin(schema, options) {
         });
     });
 
+
     schema.post('remove', function(doc, next) {
+        var refrenceDocument = Object.assign({}, doc);
         var activity = {
             collectionType: options.schemaName,
-            referenceDocument: doc,
+            referenceDocument: referenceDocument,
             action: options.deleteAction || 'deleted',
             loggedBy: this.modifiedBy,
             createdAt: Date.now()
